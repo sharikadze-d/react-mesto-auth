@@ -1,8 +1,7 @@
-import { authorize, getUserData } from '../utils/auth.js';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login ({ handleLogIn }) {
+export default function Login ({ handleAuthorization }) {
   const emailRef = useRef(),
         passwordRef = useRef(),
         navigate = useNavigate();
@@ -13,16 +12,7 @@ export default function Login ({ handleLogIn }) {
     const email = emailRef.current.value,
           password = passwordRef.current.value;
 
-    authorize(email, password)
-      .then((res) => { 
-        localStorage.setItem('jwt', res.token);
-        getUserData(res.token)
-          .then((res) => {
-            handleLogIn(res.data.email);
-            navigate('/');
-          })
-       })
-      .catch(err => { new Error(err) })
+    handleAuthorization(email, password);
   }
 
   return (

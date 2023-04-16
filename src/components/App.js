@@ -12,7 +12,8 @@ import { Routes, Route, useNavigate} from 'react-router-dom';
 import Login from './Login.js';
 import Register from './Register.js';
 import ProtectedRoute from './ProtectedRoute.js';
-import { getUserData } from '../utils/auth.js'
+import { getUserData, authorize, register } from '../utils/auth.js';
+import InfoTooltip from './InfoTooltip.js';
 
 function App() {
   //State-переменные
@@ -24,7 +25,9 @@ function App() {
         [currentUser, setCurrentUser] = useState({}),
         [cards, setCards] = useState([]),
         [loggedIn, setLoggedIn] = useState(false),
-        [userEmail, setUserEmail] = useState('');
+        [userEmail, setUserEmail] = useState(''),
+        [isInfoPopupOpen, setIsInfoPopupOpen] = useState(false),
+        [isRegistred, setIsRegistred] = useState(false);
 
   const navigate = useNavigate();
 
@@ -116,6 +119,26 @@ function App() {
     tokenCheck();
   }, [])
 
+  function handleAuthorization(email, password) {
+    authorize(email, password)
+      .then((res) => { 
+        localStorage.setItem('jwt', res.token);
+        getUserData(res.token)
+          .then((res) => {
+            handleLogIn(res.data.email);
+            navigate('/');
+          })
+       })
+      .catch(err => { console.log(new Error(err)) })
+  }
+
+  function handleRegister(email, password) {
+    register(email, password)
+    .then(() => { setIsRegistred(true) })
+    .catch(() => { setIsRegistred(false) })
+    .finally(() => { openInfoTooltip() })
+  }
+
   //Проверка токена
   function tokenCheck() {
     const token = localStorage.getItem('jwt');
@@ -129,6 +152,7 @@ function App() {
           navigate('/');
         }
        })
+       .catch(err => { console.log(new Error(`Ошибка: ${err}`)) })
   }
 
   //Обработчик входа
@@ -141,6 +165,17 @@ function App() {
   function handleLogIn(email) {
     setLoggedIn (true);
     setUserEmail(email);
+  }
+
+    //Открыть уведомление
+  function openInfoTooltip() {
+    setIsInfoPopupOpen(true);
+  }
+
+  //Закрыть уведомление
+  function closeInfoTooltip() {
+    setIsInfoPopupOpen(false);
+    isRegistred && navigate('/sign-in', {replace: true});
   }
 
   return (
@@ -175,7 +210,9 @@ function App() {
                 loggedIn={loggedIn}
                 buttonText={"Войти"}
                 buttonLink={"/sign-in"}/>
-              <Register />
+              <Register 
+                handleRegister={handleRegister}
+              />
             </>} />
           <Route path="/sign-in" element={
             <>
@@ -184,7 +221,7 @@ function App() {
                 buttonText={"Зарегистрироваться"}
                 buttonLink={"/sign-up"}/>
               <Login 
-                handleLogIn={handleLogIn}
+                handleAuthorization={handleAuthorization}
               />
             </>} />
         </Routes>
@@ -209,6 +246,10 @@ function App() {
         onClose={closeAllPopups}
         isOpen={isImagePopupOpen}
         />
+        <InfoTooltip 
+          isRegistred={isRegistred}
+          isOpen={isInfoPopupOpen}
+          onClose={closeInfoTooltip} />
       </div>
     </CurrentUserContext.Provider>
   );

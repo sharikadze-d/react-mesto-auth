@@ -13,7 +13,7 @@ export default function EditProfilePopup({ isOpen, onClose, onUpdateUser}) {
   React.useEffect(() => {
     setName(user.name ? user.name : '');
     setDescription(user.about ? user.about : '');
-  }, [user]); 
+  }, [user, isOpen]); 
 
   //Два обработчика изменений в полях ввода
   function handleChangeName(evt) {

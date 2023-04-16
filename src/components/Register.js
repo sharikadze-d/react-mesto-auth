@@ -1,25 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { register } from '../utils/auth.js'
 import { useState, useRef} from 'react';
-import InfoTooltip from './InfoTooltip.js'
 
-export default function Register () {
-  const [isInfoPopupOpen, setIsInfoPopupOpen] = useState(false),
-        [isRegistred, setIsRegistred] = useState(false),
-        emailRef = useRef(),
-        passwordRef = useRef(),
-        navigate = useNavigate();
-
-  //Открыть уведомление
-  function openInfoTooltip() {
-    setIsInfoPopupOpen(true);
-  }
-
-  //Закрыть уведомление
-  function closeInfoTooltip() {
-    setIsInfoPopupOpen(false);
-    isRegistred && navigate('/sign-in', {replace: true});
-  }
+export default function Register ({ handleRegister }) {
+  const emailRef = useRef(),
+        passwordRef = useRef();
 
   //Обработчик отправки формы
   function handleSubmit (evt) {
@@ -27,10 +11,7 @@ export default function Register () {
     const email = emailRef.current.value,
           password = passwordRef.current.value;
 
-    register(email, password)
-      .then(() => { setIsRegistred(true) })
-      .catch(() => { setIsRegistred(false) })
-      .finally(() => { openInfoTooltip() })
+    handleRegister(email, password);
   }
 
   return (
@@ -43,10 +24,7 @@ export default function Register () {
         <Link to="/sign-in" className="auth-form__link opacity">Уже зарегистрированы? Войти</Link>
       </form>
 
-      <InfoTooltip 
-          isRegistred={isRegistred}
-          isOpen={isInfoPopupOpen}
-          onClose={closeInfoTooltip} />
+      
     </> 
   );
 }
